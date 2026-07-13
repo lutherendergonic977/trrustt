@@ -1,0 +1,286 @@
+# ═══════════════════════════════════════════════════════════════════════
+# TRRUSTT — Default Configuration
+#
+# These are the system defaults (Layer 7 — lowest priority).
+# They are embedded in the binary at compile time via build.rs.
+# Users override via TOML files, env vars (TRRUSTT_ prefix), or CLI args.
+# ═══════════════════════════════════════════════════════════════════════
+
+# ── Paths ────────────────────────────────────────────────────────────
+[paths]
+config_dir = "~/.trrustt/"
+data_dir = "~/.trrustt/data/"
+backup_dir = "~/.trrustt/backups/"
+prompts_dir = "~/.trrustt/prompts/"
+themes_dir = "~/.trrustt/themes/"
+logs_dir = "~/.trrustt/logs/"
+database_path = "~/.trrustt/data/trrustt.db"
+lancedb_path = "~/.trrustt/data/lancedb/"
+
+# ── XMLA / SSAS ──────────────────────────────────────────────────────
+[xmla]
+default_port = 0                          # 0 = auto-detect from PBI Desktop
+connect_timeout_secs = 10
+request_timeout_secs = 60
+max_retries = 3
+retry_backoff_ms = 500
+discover_batch_size = 100
+connection_pool_size = 4
+validate_certs = false                    # localhost SSAS uses self-signed certs
+
+# ── DAX Engine ───────────────────────────────────────────────────────
+[dax]
+default_complexity = "intermediate"       # beginner | intermediate | advanced | expert
+max_self_correction_cycles = 3
+max_measures_per_batch = 25
+require_comments_above_complexity = "intermediate"
+enforce_naming_convention = true
+default_naming_convention = "PascalCase"  # PascalCase | camelCase | snake_case
+
+[dax.validation]
+syntax_check = true
+semantic_check = true
+performance_check = true
+style_check = true
+security_check = true
+reference_check = true
+dependency_check = true
+
+[dax.performance]
+max_query_timeout_ms = 30000
+warn_if_cost_exceeds_ms = 5000
+cardinality_estimation_threshold = 1000000
+
+# ── AI Engine ────────────────────────────────────────────────────────
+[ai]
+default_provider = "openai"
+default_model = "gpt-4o"
+fallback_provider = "azure-openai"
+fallback_model = "gpt-4o"
+
+[ai.params]
+temperature = 0.3
+max_tokens = 4096
+top_p = 0.95
+frequency_penalty = 0.0
+presence_penalty = 0.0
+
+[ai.retry]
+max_retries = 3
+initial_backoff_ms = 1000
+max_backoff_ms = 30000
+backoff_multiplier = 2.0
+
+[ai.rate_limiting]
+enabled = true
+requests_per_minute = 60
+burst_size = 10
+
+[ai.cache]
+enabled = true
+max_entries = 10000
+ttl_chat_secs = 3600
+ttl_dax_generate_secs = 86400
+ttl_dax_validate_secs = 3600
+ttl_dashboard_plan_secs = 86400
+ttl_vision_secs = 604800
+ttl_embed_secs = 2592000
+
+[ai.cost]
+require_estimate = true
+warning_threshold_usd = 1.00
+block_threshold_usd = 10.00
+daily_limit_usd = 5.00
+monthly_limit_org_usd = 500.00
+
+# ── AI Prompt Chains ──────────────────────────────────────────────────
+# Each chain step can be independently tuned for model, temperature,
+# max_tokens, and other generation parameters.
+
+[ai.chains.analyze_schema]
+model = "gpt-4o"
+temperature = 0.3
+max_tokens = 2048
+
+[ai.chains.generate_dax]
+model = "gpt-4o"
+temperature = 0.2
+max_tokens = 1024
+
+[ai.chains.plan_dashboard]
+model = "gpt-4o"
+temperature = 0.4
+max_tokens = 4096
+
+[ai.chains.generate_description]
+model = "gpt-4o"
+temperature = 0.5
+max_tokens = 2048
+
+[ai.chains.correct_dax]
+model = "gpt-4o"
+temperature = 0.1
+max_tokens = 1024
+
+[ai.chains.vision_analyze]
+model = "gpt-4o"
+temperature = 0.3
+max_tokens = 2048
+
+[ai.chains.rag_query]
+model = "gpt-4o"
+temperature = 0.2
+max_tokens = 1536
+
+# ── Providers ────────────────────────────────────────────────────────
+[ai.providers.openai]
+enabled = true
+api_base = "https://api.openai.com/v1"
+models = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "o1", "o3-mini"]
+
+[ai.providers.azure-openai]
+enabled = false
+api_base = ""                             # User must configure
+api_version = "2024-12-01-preview"
+models = []
+
+[ai.providers.anthropic]
+enabled = false
+api_base = "https://api.anthropic.com/v1"
+models = ["claude-sonnet-4-20250514", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"]
+
+[ai.providers.google]
+enabled = false
+api_base = "https://generativelanguage.googleapis.com/v1beta"
+models = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"]
+
+[ai.providers.deepseek]
+enabled = false
+api_base = "https://api.deepseek.com/v1"
+models = ["deepseek-chat", "deepseek-reasoner"]
+
+[ai.providers.ollama]
+enabled = false
+api_base = "http://localhost:11434/v1"
+models = []
+
+# ── RAG (Retrieval-Augmented Generation) ─────────────────────────────
+[rag]
+enabled = true
+embedding_provider = "openai"
+embedding_model = "text-embedding-3-small"
+chunk_size = 512
+chunk_overlap = 64
+search_top_k = 10
+similarity_threshold = 0.7
+hybrid_search_weight_bm25 = 0.3
+
+# ── Dashboard Generator ──────────────────────────────────────────────
+[dashboard]
+default_page_name = "Page 1"
+max_visuals_per_page = 20
+default_grid_columns = 12
+default_grid_density = "medium"           # compact | medium | spacious
+auto_apply_theme = true
+auto_bind_fields = true
+layout_engine = "ai"                      # ai | grid | golden-ratio
+
+[dashboard.visuals]
+allowed_types = [
+    "barChart", "columnChart", "lineChart", "areaChart",
+    "pieChart", "donutChart", "treemap",
+    "card", "multiRowCard", "kpi",
+    "table", "matrix",
+    "scatterChart", "waterfallChart", "funnelChart",
+    "gauge", "slicer", "map", "decompositionTree"
+]
+
+# ── Theme Engine ─────────────────────────────────────────────────────
+[theme]
+default_theme = "default"
+auto_discover_custom_themes = true
+validate_on_import = true
+allow_custom_fonts = true
+
+# ── MCP Hub ──────────────────────────────────────────────────────────
+[mcp]
+server_enabled = true
+server_transport = "stdio"                # stdio | sse | http
+server_port = 0                           # 0 = random for SSE/HTTP
+client_connect_timeout_secs = 10
+max_tools_per_server = 50
+
+# ── License ──────────────────────────────────────────────────────────
+[license]
+offline_grace_days = 30
+phone_home_interval_hours = 24
+cache_encrypted = true
+allow_trial = true
+trial_days = 14
+
+# ── Logging ──────────────────────────────────────────────────────────
+[logging]
+level = "info"                            # trace | debug | info | warn | error
+format = "json"                           # json | pretty | compact
+output = "both"                           # stdout | file | both
+file_rotation = "daily"                   # daily | hourly | never
+max_log_files = 30
+anonymize_ips = true
+strip_pii = true
+
+# ── Telemetry ────────────────────────────────────────────────────────
+[telemetry]
+enabled = true
+otlp_endpoint = ""                        # User must configure
+sample_rate = 0.1
+batch_size = 256
+export_interval_secs = 5
+
+# ── UI (Tauri) ───────────────────────────────────────────────────────
+[ui]
+window_title = "🔷 TRRUSTT"
+window_width = 1280
+window_height = 900
+min_width = 900
+min_height = 600
+start_maximized = false
+theme = "system"                          # light | dark | system
+accent_color = "#2563EB"                  # blue-600
+language = "en"
+
+# ── Database ─────────────────────────────────────────────────────────
+[database]
+sqlite_wal_mode = true
+sqlite_busy_timeout_ms = 5000
+sqlite_cache_size_mb = 32
+auto_vacuum_interval_days = 7
+auto_analyze_interval_days = 1
+backup_before_migrate = true
+
+# ── Security ─────────────────────────────────────────────────────────
+[security]
+session_timeout_minutes = 480
+max_login_attempts = 5
+lockout_duration_minutes = 15
+password_min_length = 12
+encrypt_config_secrets = true
+allowed_export_formats = ["pdf", "png", "pptx", "pbix", "json"]
+
+# ── i18n ─────────────────────────────────────────────────────────────
+[i18n]
+default_language = "en"
+fallback_language = "en"
+available_languages = ["en"]
+load_from_directory = "~/.trrustt/i18n/"
+
+# ── Feature Flags ────────────────────────────────────────────────────
+[features]
+rag_enabled = true
+vision_enabled = true
+mcp_server_enabled = true
+mcp_client_enabled = true
+dashboard_generation = true
+image_to_dashboard = true
+dax_self_correction = true
+cli_mode = true
+tui_mode = true

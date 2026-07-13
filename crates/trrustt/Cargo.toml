@@ -1,0 +1,67 @@
+# ═══════════════════════════════════════════════════════════════════════
+# TRRUSTT — Main Binary Crate
+#
+# The single binary entry point. Supports multiple modes:
+# - GUI (Tauri + Svelte 5) — primary mode
+# - CLI (clap) — automation & scripting
+# - TUI (ratatui) — terminal admin
+# - MCP Server (stdio) — AI assistant integration
+# ═══════════════════════════════════════════════════════════════════════
+
+[package]
+name = "trrustt"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "TRRUSTT — AI-driven Power BI External Tool"
+default-run = "TRRUSTT"
+
+[[bin]]
+name = "TRRUSTT"
+path = "src/main.rs"
+
+[dependencies]
+# ── Workspace crates ──────────────────────────────────────────────────
+shared = { path = "../shared" }
+config-engine = { path = "../config-engine" }
+data-store = { path = "../data-store" }
+xmla-client = { path = "../xmla-client" }
+
+# ── CLI ──────────────────────────────────────────────────────────────
+clap.workspace = true
+
+# ── TUI ──────────────────────────────────────────────────────────────
+ratatui.workspace = true
+crossterm.workspace = true
+
+# ── Async Runtime ────────────────────────────────────────────────────
+tokio = { workspace = true, features = ["full"] }
+
+# ── Tauri (GUI) ──────────────────────────────────────────────────────
+tauri = { workspace = true, optional = true }
+
+# ── Serialization ────────────────────────────────────────────────────
+serde.workspace = true
+serde_json.workspace = true
+
+# ── Logging ──────────────────────────────────────────────────────────
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+# ── Misc ─────────────────────────────────────────────────────────────
+dirs.workspace = true
+uuid.workspace = true
+
+[build-dependencies]
+tauri-build = { workspace = true, optional = true }
+
+[features]
+default = ["gui"]
+gui = ["dep:tauri", "dep:tauri-build"]
+cli-only = []
+
+[lints]
+workspace = true

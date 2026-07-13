@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════════════════
+# TRRUSTT — .gitignore
+# ═══════════════════════════════════════════════════════════════════════
+
+# ── Rust ─────────────────────────────────────────────────────────────
+/target/
+**/*.rs.bk
+*.pdb
+
+# ── Cargo.lock (only commit for binary projects)
+# We DO commit Cargo.lock since this is a binary project.
+# /Cargo.lock  ← intentionally NOT in gitignore
+
+# ── IDE ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Environment ──────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.env
+
+# ── Node (for Tauri frontend) ────────────────────────────────────────
+node_modules/
+dist/
+.cache/
+*.tsbuildinfo
+
+# ── Coverage ─────────────────────────────────────────────────────────
+coverage/
+*.lcov
+coverage.lcov
+tarpaulin-report.html
+
+# ── Benchmarks ───────────────────────────────────────────────────────
+/criterion/
+
+# ── Package artifacts ────────────────────────────────────────────────
+*.zip
+*.tar.gz
+*.msi
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+
+# ── Local config (user-specific, do not commit) ──────────────────────
+.intellidashboard/
+.trrustt/
+
+# ── OS files ─────────────────────────────────────────────────────────
+Desktop.ini

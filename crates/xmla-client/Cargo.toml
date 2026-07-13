@@ -1,0 +1,49 @@
+# ═══════════════════════════════════════════════════════════════════════
+# TRRUSTT — XMLA Client Crate
+#
+# HTTP client for Power BI Desktop's embedded SSAS instance.
+# XMLA operations: DISCOVER_XMLA, EXECUTE, TMSL commands.
+# ═══════════════════════════════════════════════════════════════════════
+
+[package]
+name = "xmla-client"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "TRRUSTT XMLA/TMSL client for Power BI Desktop SSAS"
+
+[dependencies]
+# ── Workspace ────────────────────────────────────────────────────────
+shared = { path = "../shared" }
+config-engine = { path = "../config-engine" }
+
+# ── HTTP Client ──────────────────────────────────────────────────────
+reqwest = { workspace = true, features = ["json", "gzip", "rustls-tls"], default-features = false }
+
+# ── Serialization ────────────────────────────────────────────────────
+serde.workspace = true
+serde_json.workspace = true
+
+# ── Error Handling ───────────────────────────────────────────────────
+thiserror.workspace = true
+
+# ── Async Runtime ────────────────────────────────────────────────────
+tokio.workspace = true
+
+# ── UUID ─────────────────────────────────────────────────────────────
+uuid.workspace = true
+
+# ── Logging ──────────────────────────────────────────────────────────
+tracing.workspace = true
+
+# ── Base64 (for image/connection strings) ────────────────────────────
+base64.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }
+
+[lints]
+workspace = true

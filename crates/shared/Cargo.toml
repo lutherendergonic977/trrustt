@@ -1,0 +1,54 @@
+# ═══════════════════════════════════════════════════════════════════════
+# TRRUSTT — Shared Crate
+#
+# Foundation crate. All other crates depend on this.
+# Contains: domain types, error types, telemetry, constants.
+# ═══════════════════════════════════════════════════════════════════════
+
+[package]
+name = "shared"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "TRRUSTT shared types, errors, telemetry, and constants"
+
+[dependencies]
+# ── Workspace ────────────────────────────────────────────────────────
+# shared has NO workspace crate dependencies (it's the root of the dependency tree)
+
+# ── Serialization ────────────────────────────────────────────────────
+serde.workspace = true
+serde_json.workspace = true
+
+# ── Error Handling ───────────────────────────────────────────────────
+thiserror.workspace = true
+
+# ── Logging & Observability ──────────────────────────────────────────
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-opentelemetry.workspace = true
+opentelemetry.workspace = true
+opentelemetry_sdk.workspace = true
+opentelemetry-otlp = { workspace = true, optional = true }
+
+# ── UUID ─────────────────────────────────────────────────────────────
+uuid.workspace = true
+
+# ── Date/Time ────────────────────────────────────────────────────────
+chrono.workspace = true
+
+# ── Misc ─────────────────────────────────────────────────────────────
+once_cell.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+
+[features]
+default = ["telemetry-otlp"]
+telemetry-otlp = ["opentelemetry-otlp"]
+
+[lints]
+workspace = true

@@ -1,0 +1,20 @@
+# ═══════════════════════════════════════════════════════════════════════
+# TRRUSTT — Cargo Build Configuration
+# ═══════════════════════════════════════════════════════════════════════
+
+[build]
+jobs = 8
+
+# ── Windows MSVC with rust-lld linker ──────────────────────────────────
+# Uses Rust's built-in LLD linker — no MSVC Build Tools or admin needed.
+# This avoids the Git link.exe conflict.
+[target.x86_64-pc-windows-msvc]
+linker = "rust-lld"
+rustflags = ["-C", "link-arg=/STACK:8388608"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

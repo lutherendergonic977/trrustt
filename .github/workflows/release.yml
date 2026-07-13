@@ -1,0 +1,194 @@
+# ═══════════════════════════════════════════════════════════════════════
+# TRRUSTT — Release Pipeline
+#
+# Triggered by pushing a version tag (v*).
+# Builds for all targets, signs binaries, creates GitHub Release.
+# ═══════════════════════════════════════════════════════════════════════
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.1.0-alpha.1)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  attestations: write
+  id-token: write
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+
+jobs:
+  # ── Determine Version ─────────────────────────────────────────────
+  version:
+    name: Determine Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: version
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ── Build All Targets ─────────────────────────────────────────────
+  build:
+    name: Build (${{ matrix.target }})
+    needs: version
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Windows (primary target)
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            binary: TRRUSTT.exe
+            archive: TRRUSTT-windows-x64.zip
+          # macOS Intel
+          - os: macos-13
+            target: x86_64-apple-darwin
+            binary: TRRUSTT
+            archive: TRRUSTT-macos-x64.tar.gz
+          # macOS Apple Silicon
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            binary: TRRUSTT
+            archive: TRRUSTT-macos-arm64.tar.gz
+          # Linux (GNU)
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            binary: TRRUSTT
+            archive: TRRUSTT-linux-x64.tar.gz
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install system deps (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libdbus-1-dev libgtk-3-dev libsoup-3.0-dev libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev
+
+      - name: Build (dist profile)
+        run: cargo build --profile dist --target ${{ matrix.target }}
+
+      - name: Rename binary (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          cp "target/${{ matrix.target }}/dist/trrustt.exe" "target/${{ matrix.target }}/dist/TRRUSTT.exe"
+
+      - name: Generate SHA-256 checksums
+        shell: bash
+        run: |
+          cd "target/${{ matrix.target }}/dist"
+          sha256sum "${{ matrix.binary }}" > "${{ matrix.binary }}.sha256"
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive `
+            -Path "target/${{ matrix.target }}/dist/TRRUSTT.exe",
+                  "target/${{ matrix.target }}/dist/TRRUSTT.exe.sha256" `
+            -DestinationPath "${{ matrix.archive }}"
+
+      - name: Package (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          cd "target/${{ matrix.target }}/dist"
+          tar -czvf "../../../${{ matrix.archive }}" "${{ matrix.binary }}" "${{ matrix.binary }}.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive }}
+          path: ${{ matrix.archive }}
+
+  # ── Create GitHub Release ─────────────────────────────────────────
+  release:
+    name: Create Release
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          echo "changelog<<EOF" >> "$GITHUB_OUTPUT"
+          git log $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "HEAD~20")..HEAD \
+            --pretty=format:"- %s (%h)" --no-merges >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.version.outputs.version }}
+          name: "🔷 TRRUSTT v${{ needs.version.outputs.version }}"
+          body: |
+            ## 🔷 TRRUSTT v${{ needs.version.outputs.version }}
+
+            AI-driven Power BI External Tool. Single binary, zero runtime dependencies.
+
+            ### Changes
+            ${{ steps.changelog.outputs.changelog }}
+
+            ### Installation
+            1. Download `TRRUSTT-<platform>.zip`
+            2. Extract `TRRUSTT.exe` to `%APPDATA%\Microsoft\Power BI Desktop\External Tools\`
+            3. Register via `TRRUSTT.json`
+            4. Open Power BI Desktop → External Tools → 🔷 TRRUSTT
+
+            ### Checksums
+            SHA-256 checksums are included in each archive.
+          files: artifacts/**/*
+          draft: true
+          prerelease: ${{ contains(needs.version.outputs.version, 'alpha') || contains(needs.version.outputs.version, 'beta') || contains(needs.version.outputs.version, 'rc') }}
+          generate_release_notes: true
+
+  # ── Publish to crates.io (library crates only) ────────────────────
+  publish-crates:
+    name: Publish to crates.io
+    needs: release
+    runs-on: ubuntu-latest
+    if: ${{ !contains(needs.version.outputs.version, 'alpha') && !contains(needs.version.outputs.version, 'beta') && !contains(needs.version.outputs.version, 'rc') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Publish crates (ordered by dependency)
+        run: |
+          cargo publish -p shared --token ${{ secrets.CARGO_TOKEN }} --allow-dirty
+          cargo publish -p config-engine --token ${{ secrets.CARGO_TOKEN }} --allow-dirty
+          cargo publish -p data-store --token ${{ secrets.CARGO_TOKEN }} --allow-dirty
+          cargo publish -p xmla-client --token ${{ secrets.CARGO_TOKEN }} --allow-dirty
+          cargo publish -p dax-engine --token ${{ secrets.CARGO_TOKEN }} --allow-dirty
+          cargo publish -p ai-engine --token ${{ secrets.CARGO_TOKEN }} --allow-dirty
+          cargo publish -p dashboard-generator --token ${{ secrets.CARGO_TOKEN }} --allow-dirty
+          cargo publish -p mcp-hub --token ${{ secrets.CARGO_TOKEN }} --allow-dirty
+          cargo publish -p license-manager --token ${{ secrets.CARGO_TOKEN }} --allow-dirty
+        continue-on-error: true

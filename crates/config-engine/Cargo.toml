@@ -1,0 +1,60 @@
+# ═══════════════════════════════════════════════════════════════════════
+# TRRUSTT — Configuration Engine Crate
+#
+# 7-layer config resolution via figment.
+# AES-256-GCM encryption for secrets.
+# Admin policy enforcement. Policy engine with 8 categories.
+# ═══════════════════════════════════════════════════════════════════════
+
+[package]
+name = "config-engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "TRRUSTT configuration engine — 7-layer resolution, encryption, policies"
+
+[dependencies]
+# ── Workspace ────────────────────────────────────────────────────────
+shared = { path = "../shared" }
+
+# ── Config ───────────────────────────────────────────────────────────
+figment.workspace = true
+toml.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+# ── Error Handling ───────────────────────────────────────────────────
+thiserror.workspace = true
+
+# ── Cryptography ─────────────────────────────────────────────────────
+ring.workspace = true
+aes-gcm.workspace = true
+sha2.workspace = true
+
+# ── Async Runtime ────────────────────────────────────────────────────
+tokio = { workspace = true, features = ["fs", "sync", "macros"] }
+
+# ── UUID ─────────────────────────────────────────────────────────────
+uuid.workspace = true
+
+# ── Date/Time ────────────────────────────────────────────────────────
+chrono.workspace = true
+
+# ── File System ──────────────────────────────────────────────────────
+dirs.workspace = true
+
+# ── Logging ──────────────────────────────────────────────────────────
+tracing.workspace = true
+
+# ── Misc ─────────────────────────────────────────────────────────────
+base64.workspace = true
+dashmap.workspace = true
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints]
+workspace = true

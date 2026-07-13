@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 380" width="300" height="380" fill="none">
+  <!-- trRUSTt Vertical Stacked Logo -->
+  <!-- Layout: Icon top + Wordmark below (centered) -->
+
+  <defs>
+    <g id="trrustt-icon-vert">
+      <!-- Modern geometric shield outline -->
+      <path d="M48 28 L208 28 Q216 28 216 36 L216 140 C216 196 180 222 128 228 C76 222 40 196 40 140 L40 36 Q40 28 48 28 Z"
+            stroke="#2563EB" stroke-width="8" stroke-linejoin="round" />
+      <!-- Bar 1 -->
+      <rect x="86" y="114" width="22" height="56" rx="4" fill="#2563EB" opacity="0.55" />
+      <!-- Bar 2 -->
+      <rect x="118" y="96" width="22" height="74" rx="4" fill="#2563EB" opacity="0.78" />
+      <!-- Bar 3 -->
+      <rect x="150" y="78" width="22" height="92" rx="4" fill="#7C3AED" />
+      <!-- Sparkle -->
+      <path d="M161 41 L166 51 L176 55 L166 59 L161 69 L156 59 L146 55 L156 51 Z" fill="#7C3AED" />
+    </g>
+  </defs>
+
+  <!-- Icon (centered) -->
+  <use href="#trrustt-icon-vert" x="0" y="0" transform="translate(22, 12) scale(1.0)" />
+
+  <!-- Wordmark: trRUSTt (centered below icon) -->
+  <text x="150" y="310" text-anchor="middle" font-family="'Inter', 'Plus Jakarta Sans', 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="44" font-weight="400" letter-spacing="-0.5">
+    <tspan fill="#2563EB">tr</tspan>
+    <tspan fill="#7C3AED" font-weight="700">RUST</tspan>
+    <tspan fill="#2563EB">t</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text x="150" y="342" text-anchor="middle" font-family="'Inter', 'Plus Jakarta Sans', 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="400" fill="#94A3B8" letter-spacing="0.6">
+    Trust your data. One binary. Infinite dashboards.
+  </text>
+</svg>

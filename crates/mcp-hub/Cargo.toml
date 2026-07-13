@@ -1,0 +1,21 @@
+[package]
+name = "mcp-hub"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "TRRUSTT MCP hub — MCP server (stdio) + client"
+
+[dependencies]
+shared = { path = "../shared" }
+config-engine = { path = "../config-engine" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[lints]
+workspace = true
